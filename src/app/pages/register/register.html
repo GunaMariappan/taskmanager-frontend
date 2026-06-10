@@ -1,0 +1,77 @@
+<div class="register-container">
+
+    <!-- ✅ Animated orbs -->
+    <div class="orb-3"></div>
+    <div class="orb-4"></div>
+    <div class="grid-bg"></div>
+
+    <mat-card class="register-card">
+
+        <div class="logo-section">
+            <div class="logo-icon">
+                <mat-icon>person_add</mat-icon>
+            </div>
+            <h1>Create Account</h1>
+            <p>Join your workspace today</p>
+        </div>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Full Name</mat-label>
+                <input matInput formControlName="full_name" placeholder="Enter your full name">
+                <mat-icon matSuffix>person</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email Address</mat-label>
+                <input matInput formControlName="email" type="email" placeholder="Enter your email">
+                <mat-icon matSuffix>email</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Password</mat-label>
+                <input matInput formControlName="password" type="password" placeholder="Min 6 characters">
+                <mat-icon matSuffix>lock</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Role</mat-label>
+                <mat-select formControlName="role">
+                    <mat-option value="team_member">Team Member</mat-option>
+                    <mat-option value="project_manager">Project Manager</mat-option>
+                    <mat-option value="admin">Admin</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            @if (errorMessage) {
+            <div class="error-message">
+                <mat-icon style="font-size:16px; vertical-align:middle;">error</mat-icon>
+                {{ errorMessage }}
+            </div>
+            }
+
+            @if (successMessage) {
+            <div class="success-message">
+                <mat-icon style="font-size:16px; vertical-align:middle;">check_circle</mat-icon>
+                {{ successMessage }}
+            </div>
+            }
+
+            <button mat-raised-button type="submit" [disabled]="registerForm.invalid || isLoading" class="register-btn">
+                @if (isLoading) {
+                <mat-icon>hourglass_empty</mat-icon> Creating account...
+                } @else {
+                <mat-icon>person_add</mat-icon> Create Account
+                }
+            </button>
+
+        </form>
+
+        <div class="login-link">
+            Already have an account?
+            <a routerLink="/login">Sign in here</a>
+        </div>
+
+    </mat-card>
+</div>

@@ -1,0 +1,167 @@
+<div class="tasks-wrapper">
+    <mat-toolbar class="toolbar">
+        <button mat-icon-button routerLink="/dashboard">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <span class="toolbar-title">Tasks</span>
+        <span class="spacer"></span>
+        <button mat-raised-button class="new-btn" (click)="showForm = true">
+            <mat-icon>add</mat-icon> New Task
+        </button>
+        <button mat-icon-button (click)="logout()">
+            <mat-icon>logout</mat-icon>
+        </button>
+    </mat-toolbar>
+
+    <div class="tasks-container">
+        <div class="page-header">
+            <h2>My Tasks ✅</h2>
+            <p>Track and manage all your tasks</p>
+        </div>
+
+        @if (showForm) {
+        <mat-card class="form-card">
+            <mat-card-title>{{ isEditing ? 'Edit Task' : 'New Task' }}</mat-card-title>
+            <mat-card-content>
+                <form [formGroup]="taskForm" (ngSubmit)="saveTask()">
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Task Title</mat-label>
+                        <input matInput formControlName="title" placeholder="Enter task title">
+                        <mat-icon matSuffix>assignment</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Description</mat-label>
+                        <textarea matInput formControlName="description" rows="3"></textarea>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Project</mat-label>
+                        <mat-select formControlName="project_id">
+                            @for (project of projects; track project.id) {
+                            <mat-option [value]="project.id">{{ project.name }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Status</mat-label>
+                        <mat-select formControlName="status">
+                            <mat-option value="todo">Todo</mat-option>
+                            <mat-option value="in_progress">In Progress</mat-option>
+                            <mat-option value="review">Review</mat-option>
+                            <mat-option value="completed">Completed</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Priority</mat-label>
+                        <mat-select formControlName="priority">
+                            <mat-option value="low">Low</mat-option>
+                            <mat-option value="medium">Medium</mat-option>
+                            <mat-option value="high">High</mat-option>
+                            <mat-option value="critical">Critical</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- ✅ DUE DATE -->
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Due Date</mat-label>
+                        <input matInput type="date" formControlName="due_date">
+                        <mat-icon matSuffix>calendar_today</mat-icon>
+                    </mat-form-field>
+
+                    <div class="form-actions">
+                        <button mat-raised-button class="save-btn" type="submit">
+                            <mat-icon>save</mat-icon>
+                            {{ isEditing ? 'Update Task' : 'Create Task' }}
+                        </button>
+                        <button mat-button class="cancel-btn" type="button" (click)="cancelForm()">
+                            Cancel
+                        </button>
+                    </div>
+
+                </form>
+            </mat-card-content>
+        </mat-card>
+        }
+
+        <div class="tasks-grid">
+            @for (task of tasks; track task.id) {
+            <mat-card class="task-card">
+                <mat-card-header>
+                    <mat-card-title>{{ task.title }}</mat-card-title>
+                    <mat-card-subtitle>
+                        <div class="badges">
+                            <span class="status-badge {{ task.status }}">{{ task.status }}</span>
+                            <span class="priority-badge {{ task.priority }}">{{ task.priority }}</span>
+                        </div>
+                    </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <p>{{ task.description || 'No description' }}</p>
+                    <!-- ✅ DUE DATE BADGE -->
+                    @if (getDueBadge(task); as badge) {
+                    <div class="due-badge {{ badge.css }}">
+                        {{ badge.label }}
+                    </div>
+                    }
+                </mat-card-content>
+                <mat-card-actions>
+                    <button mat-icon-button color="primary" (click)="editTask(task)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="openDeleteDialog(task)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </mat-card-actions>
+            </mat-card>
+            }
+            @empty {
+            <div class="empty-state">
+                <mat-icon>assignment_late</mat-icon>
+                <h3>No Tasks Yet!</h3>
+                <p>Create your first task to get started</p>
+                <button mat-raised-button class="save-btn" (click)="showForm = true">
+                    <mat-icon>add</mat-icon> Create Task
+                </button>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- ✅ CONFIRM DELETE DIALOG -->
+    @if (showConfirmDialog) {
+    <div class="confirm-overlay" (click)="closeDeleteDialog()">
+        <div class="confirm-dialog" (click)="$event.stopPropagation()">
+            <mat-icon class="confirm-icon">warning</mat-icon>
+            <h3>Delete Task?</h3>
+            <p>"{{ deletingTaskTitle }}" permanent-ஆ delete ஆகும்!</p>
+            <div class="confirm-actions">
+                <button mat-raised-button class="delete-btn" (click)="confirmDelete()">
+                    <mat-icon>delete</mat-icon> Delete
+                </button>
+                <button mat-button class="cancel-btn" (click)="closeDeleteDialog()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- ✅ TOAST NOTIFICATIONS -->
+    <div class="toast-container">
+        @for (toast of toasts; track toast.id) {
+        <div class="toast toast-{{ toast.type }}" (click)="removeToast(toast.id)">
+            <span class="toast-icon">
+                @if (toast.type === 'success') { ✅ }
+                @if (toast.type === 'error') { ❌ }
+                @if (toast.type === 'warning') { ⚠️ }
+                @if (toast.type === 'info') { ℹ️ }
+            </span>
+            <span>{{ toast.message }}</span>
+        </div>
+        }
+    </div>
+</div>

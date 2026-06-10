@@ -1,0 +1,112 @@
+<mat-toolbar class="toolbar">
+    <span class="toolbar-title">⚡ Task Manager</span>
+    <span class="spacer"></span>
+    <button mat-icon-button routerLink="/projects">
+        <mat-icon>folder</mat-icon>
+    </button>
+    <button mat-icon-button routerLink="/tasks">
+        <mat-icon>assignment</mat-icon>
+    </button>
+
+    <!-- ✅ BELL ICON -->
+    <button mat-icon-button class="bell-btn" (click)="toggleNotifications()">
+        <mat-icon>notifications</mat-icon>
+        @if (unreadCount > 0) {
+        <span class="badge">{{ unreadCount }}</span>
+        }
+    </button>
+
+    <button mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+    </button>
+</mat-toolbar>
+
+<!-- ✅ NOTIFICATION PANEL -->
+@if (showNotifications) {
+<div class="notif-overlay" (click)="closeNotifications()"></div>
+<div class="notif-panel">
+    <div class="notif-header">
+        <h3>🔔 Notifications</h3>
+        <span class="notif-count">{{ unreadCount }} alerts</span>
+    </div>
+
+    @if (alerts.length === 0) {
+    <div class="notif-empty">
+        <mat-icon>check_circle</mat-icon>
+        <p>All tasks on track! ✅</p>
+    </div>
+    }
+
+    @for (alert of alerts; track alert.taskTitle) {
+    <div class="notif-item notif-{{ alert.type }}">
+        <div class="notif-icon">
+            @if (alert.type === 'overdue') { 🔴 }
+            @if (alert.type === 'today') { 🟡 }
+            @if (alert.type === 'soon') { 🟠 }
+        </div>
+        <div class="notif-content">
+            <p class="notif-title">{{ alert.taskTitle }}</p>
+            <p class="notif-label">{{ alert.label }}</p>
+        </div>
+    </div>
+    }
+</div>
+}
+
+<div class="main-content">
+    <div class="page-header">
+        <h2>Welcome Back! 👋</h2>
+        <p>Here's what's happening with your projects today.</p>
+    </div>
+
+    <div class="stats-grid">
+        <mat-card class="stat-card projects" routerLink="/projects">
+            <mat-card-content>
+                <div class="stat-icon-wrapper projects">
+                    <mat-icon class="projects">folder</mat-icon>
+                </div>
+                <div class="stat-number">{{ stats.totalProjects }}</div>
+                <div class="stat-label">Total Projects</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card tasks" routerLink="/tasks">
+            <mat-card-content>
+                <div class="stat-icon-wrapper tasks">
+                    <mat-icon class="tasks">assignment</mat-icon>
+                </div>
+                <div class="stat-number">{{ stats.totalTasks }}</div>
+                <div class="stat-label">Total Tasks</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card completed" routerLink="/tasks">
+            <mat-card-content>
+                <div class="stat-icon-wrapper completed">
+                    <mat-icon class="completed">check_circle</mat-icon>
+                </div>
+                <div class="stat-number">{{ stats.completedTasks }}</div>
+                <div class="stat-label">Completed Tasks</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card pending" routerLink="/tasks">
+            <mat-card-content>
+                <div class="stat-icon-wrapper pending">
+                    <mat-icon class="pending">pending</mat-icon>
+                </div>
+                <div class="stat-number">{{ stats.pendingTasks }}</div>
+                <div class="stat-label">Pending Tasks</div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <div class="quick-actions">
+        <button mat-raised-button color="primary" routerLink="/projects">
+            <mat-icon>add</mat-icon> New Project
+        </button>
+        <button mat-raised-button color="accent" routerLink="/tasks">
+            <mat-icon>add</mat-icon> New Task
+        </button>
+    </div>
+</div>

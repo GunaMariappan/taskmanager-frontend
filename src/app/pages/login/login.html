@@ -1,0 +1,55 @@
+<div class="login-container">
+
+    <!-- ✅ Animated orbs -->
+    <div class="orb-3"></div>
+    <div class="orb-4"></div>
+    <div class="grid-bg"></div>
+
+    <mat-card class="login-card">
+
+        <div class="logo-section">
+            <div class="logo-icon">
+                <mat-icon>task_alt</mat-icon>
+            </div>
+            <h1>Task Manager</h1>
+            <p>Sign in to your workspace</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email Address</mat-label>
+                <input matInput formControlName="email" type="email" placeholder="Enter your email">
+                <mat-icon matSuffix>email</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Password</mat-label>
+                <input matInput formControlName="password" type="password" placeholder="Enter your password">
+                <mat-icon matSuffix>lock</mat-icon>
+            </mat-form-field>
+
+            @if (errorMessage) {
+            <div class="error-message">
+                <mat-icon style="font-size:16px; vertical-align:middle;">error</mat-icon>
+                {{ errorMessage }}
+            </div>
+            }
+
+            <button mat-raised-button type="submit" [disabled]="loginForm.invalid || isLoading" class="login-btn">
+                @if (isLoading) {
+                <mat-icon>hourglass_empty</mat-icon> Signing in...
+                } @else {
+                <mat-icon>login</mat-icon> Sign In
+                }
+            </button>
+
+        </form>
+
+        <div class="register-link">
+            Don't have an account?
+            <a routerLink="/register">Create account</a>
+        </div>
+
+    </mat-card>
+</div>

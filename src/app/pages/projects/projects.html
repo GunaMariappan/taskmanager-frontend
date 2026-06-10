@@ -1,0 +1,126 @@
+<div class="projects-wrapper">
+    <mat-toolbar class="toolbar">
+        <button mat-icon-button routerLink="/dashboard">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <span class="toolbar-title">Projects</span>
+        <span class="spacer"></span>
+        <button mat-raised-button class="new-btn" (click)="showForm = true">
+            <mat-icon>add</mat-icon> New Project
+        </button>
+        <button mat-icon-button (click)="logout()">
+            <mat-icon>logout</mat-icon>
+        </button>
+    </mat-toolbar>
+
+    <div class="projects-container">
+        <div class="page-header">
+            <h2>My Projects 📁</h2>
+            <p>Manage and track all your projects</p>
+        </div>
+
+        @if (showForm) {
+        <mat-card class="form-card">
+            <mat-card-title>{{ isEditing ? 'Edit Project' : 'New Project' }}</mat-card-title>
+            <mat-card-content>
+                <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Project Name</mat-label>
+                        <input matInput formControlName="name" placeholder="Enter project name">
+                        <mat-icon matSuffix>folder</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Description</mat-label>
+                        <textarea matInput formControlName="description" rows="3"></textarea>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Status</mat-label>
+                        <mat-select formControlName="status">
+                            <mat-option value="planning">Planning</mat-option>
+                            <mat-option value="active">Active</mat-option>
+                            <mat-option value="on_hold">On Hold</mat-option>
+                            <mat-option value="completed">Completed</mat-option>
+                            <mat-option value="cancelled">Cancelled</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <div class="form-actions">
+                        <button mat-raised-button class="save-btn" type="submit">
+                            <mat-icon>save</mat-icon>
+                            {{ isEditing ? 'Update Project' : 'Create Project' }}
+                        </button>
+                        <button mat-button class="cancel-btn" type="button" (click)="cancelForm()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </mat-card-content>
+        </mat-card>
+        }
+
+        <!-- Confirm Delete Dialog -->
+        @if (deleteConfirmId) {
+        <div class="confirm-overlay">
+            <div class="confirm-dialog">
+                <mat-icon class="confirm-icon">warning</mat-icon>
+                <h3>Delete Project?</h3>
+                <p>This action cannot be undone!</p>
+                <div class="confirm-actions">
+                    <button mat-raised-button class="delete-btn" (click)="deleteProject()">
+                        <mat-icon>delete</mat-icon> Yes, Delete
+                    </button>
+                    <button mat-button class="cancel-btn" (click)="cancelDelete()">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Loading -->
+        @if (isLoading) {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading projects...</p>
+        </div>
+        }
+
+        <div class="projects-grid">
+            @for (project of projects; track project.id) {
+            <mat-card class="project-card">
+                <mat-card-header>
+                    <mat-card-title>{{ project.name }}</mat-card-title>
+                    <mat-card-subtitle>
+                        <span class="status-badge {{ project.status }}">
+                            {{ project.status }}
+                        </span>
+                    </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <p>{{ project.description || 'No description provided' }}</p>
+                </mat-card-content>
+                <mat-card-actions>
+                    <button mat-icon-button color="primary" (click)="editProject(project)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="confirmDelete(project.id)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </mat-card-actions>
+            </mat-card>
+            }
+            @empty {
+            <div class="empty-state">
+                <mat-icon>folder_open</mat-icon>
+                <h3>No Projects Yet!</h3>
+                <p>Create your first project to get started</p>
+                <button mat-raised-button class="save-btn" (click)="showForm = true">
+                    <mat-icon>add</mat-icon> Create Project
+                </button>
+            </div>
+            }
+        </div>
+    </div>
+</div>
