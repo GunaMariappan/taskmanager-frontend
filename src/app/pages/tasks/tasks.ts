@@ -45,13 +45,11 @@ export class Tasks implements OnInit {
   isEditing = false;
   editingId: number | null = null;
   taskForm: FormGroup;
-  apiUrl = 'http://127.0.0.1:8000';
+  apiUrl = 'https://taskmanager-backend-xkb1.onrender.com';  // ✅ FIXED
 
-  // ✅ Toast
   toasts: Toast[] = [];
   private toastCounter = 0;
 
-  // ✅ Confirm Delete
   showConfirmDialog = false;
   deletingTaskId: number | null = null;
   deletingTaskTitle = '';
@@ -88,7 +86,7 @@ export class Tasks implements OnInit {
       .subscribe({
         next: (data) => {
           this.tasks = data;
-          this.checkDueDateAlerts(data); // ✅ alerts check
+          this.checkDueDateAlerts(data);
           this.cdr.detectChanges();
         },
         error: () => this.showToast('Failed to load tasks!', 'error')
@@ -151,14 +149,12 @@ export class Tasks implements OnInit {
     });
   }
 
-  // ✅ Confirm Delete Open
   openDeleteDialog(task: any) {
     this.deletingTaskId = task.id;
     this.deletingTaskTitle = task.title;
     this.showConfirmDialog = true;
   }
 
-  // ✅ Confirm Delete — Yes
   confirmDelete() {
     if (!this.deletingTaskId) return;
     const token = this.authService.getToken();
@@ -176,7 +172,6 @@ export class Tasks implements OnInit {
       });
   }
 
-  // ✅ Confirm Delete — Cancel
   closeDeleteDialog() {
     this.showConfirmDialog = false;
     this.deletingTaskId = null;
@@ -200,7 +195,6 @@ export class Tasks implements OnInit {
     return colors[priority] || 'primary';
   }
 
-  // ✅ Due Date Badge
   getDueBadge(task: any): { label: string, css: string } | null {
     if (!task.due_date || task.status === 'completed') return null;
 
@@ -217,7 +211,6 @@ export class Tasks implements OnInit {
     return null;
   }
 
-  // ✅ Due Date Toast Alerts
   checkDueDateAlerts(tasks: any[]) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -235,7 +228,6 @@ export class Tasks implements OnInit {
     });
   }
 
-  // ✅ Toast Methods
   showToast(message: string, type: Toast['type'] = 'info') {
     const id = ++this.toastCounter;
     this.toasts.push({ id, message, type });
