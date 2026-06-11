@@ -41,7 +41,7 @@ export class Projects implements OnInit {
   isLoading = false;
   deleteConfirmId: number | null = null;
   projectForm: FormGroup;
-  apiUrl = 'http://127.0.0.1:8000';
+  apiUrl = 'https://taskmanager-backend-xkb1.onrender.com';
 
   constructor(
     private http: HttpClient,
