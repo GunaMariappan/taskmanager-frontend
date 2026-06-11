@@ -37,9 +37,9 @@ export class Dashboard implements OnInit {
     pendingTasks: 0
   };
 
-  // ✅ Notification Bell
   alerts: DueAlert[] = [];
   showNotifications = false;
+  apiUrl = 'https://taskmanager-backend-xkb1.onrender.com'; // ✅ FIXED
 
   get unreadCount(): number {
     return this.alerts.length;
@@ -64,23 +64,22 @@ export class Dashboard implements OnInit {
     const token = this.authService.getToken();
     if (!token) return;
 
-    this.http.get<any[]>(`http://127.0.0.1:8000/projects/?token=${token}`)
+    this.http.get<any[]>(`${this.apiUrl}/projects/?token=${token}`)
       .subscribe((projects) => {
         this.stats.totalProjects = projects.length;
         this.cdr.detectChanges();
       });
 
-    this.http.get<any[]>(`http://127.0.0.1:8000/tasks/?token=${token}`)
+    this.http.get<any[]>(`${this.apiUrl}/tasks/?token=${token}`)
       .subscribe((tasks) => {
         this.stats.totalTasks = tasks.length;
         this.stats.completedTasks = tasks.filter(t => t.status === 'completed').length;
         this.stats.pendingTasks = tasks.filter(t => t.status !== 'completed').length;
-        this.checkDueAlerts(tasks); // ✅ alerts check
+        this.checkDueAlerts(tasks);
         this.cdr.detectChanges();
       });
   }
 
-  // ✅ Due Date Alert Logic
   checkDueAlerts(tasks: any[]) {
     this.alerts = [];
     const today = new Date();
@@ -88,35 +87,18 @@ export class Dashboard implements OnInit {
 
     tasks.forEach(task => {
       if (!task.due_date || task.status === 'completed') return;
-
       const due = new Date(task.due_date);
       due.setHours(0, 0, 0, 0);
       const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
       if (diffDays < 0) {
-        this.alerts.push({
-          taskTitle: task.title,
-          type: 'overdue',
-          daysLeft: diffDays,
-          label: `${Math.abs(diffDays)} days overdue!`
-        });
+        this.alerts.push({ taskTitle: task.title, type: 'overdue', daysLeft: diffDays, label: `${Math.abs(diffDays)} days overdue!` });
       } else if (diffDays === 0) {
-        this.alerts.push({
-          taskTitle: task.title,
-          type: 'today',
-          daysLeft: 0,
-          label: 'Due Today!'
-        });
+        this.alerts.push({ taskTitle: task.title, type: 'today', daysLeft: 0, label: 'Due Today!' });
       } else if (diffDays <= 3) {
-        this.alerts.push({
-          taskTitle: task.title,
-          type: 'soon',
-          daysLeft: diffDays,
-          label: `${diffDays} days left`
-        });
+        this.alerts.push({ taskTitle: task.title, type: 'soon', daysLeft: diffDays, label: `${diffDays} days left` });
       }
     });
-
     this.cdr.detectChanges();
   }
 
