@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -39,13 +39,17 @@ interface Toast {
   styleUrl: './tasks.scss'
 })
 export class Tasks implements OnInit {
+  allTasks: any[] = [];
   tasks: any[] = [];
   projects: any[] = [];
   showForm = false;
   isEditing = false;
   editingId: number | null = null;
   taskForm: FormGroup;
-  apiUrl = 'https://taskmanager-backend-xkb1.onrender.com';  // ✅ FIXED
+  apiUrl = 'https://taskmanager-backend-xkb1.onrender.com';
+
+  // ✅ Filter
+  activeFilter: string = 'all';
 
   toasts: Toast[] = [];
   private toastCounter = 0;
@@ -58,6 +62,7 @@ export class Tasks implements OnInit {
     private http: HttpClient,
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef
   ) {
@@ -76,6 +81,11 @@ export class Tasks implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+    // ✅ URL query param ?filter=completed support
+    this.route.queryParams.subscribe(params => {
+      this.activeFilter = params['filter'] || 'all';
+      this.applyFilter();
+    });
     this.loadTasks();
     this.loadProjects();
   }
@@ -85,12 +95,30 @@ export class Tasks implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/tasks/?token=${token}`)
       .subscribe({
         next: (data) => {
-          this.tasks = data;
+          this.allTasks = data;
           this.checkDueDateAlerts(data);
+          this.applyFilter();
           this.cdr.detectChanges();
         },
         error: () => this.showToast('Failed to load tasks!', 'error')
       });
+  }
+
+  // ✅ Filter logic
+  applyFilter() {
+    if (this.activeFilter === 'completed') {
+      this.tasks = this.allTasks.filter(t => t.status === 'completed');
+    } else if (this.activeFilter === 'pending') {
+      this.tasks = this.allTasks.filter(t => t.status !== 'completed');
+    } else {
+      this.tasks = this.allTasks;
+    }
+    this.cdr.detectChanges();
+  }
+
+  setFilter(filter: string) {
+    this.activeFilter = filter;
+    this.applyFilter();
   }
 
   loadProjects() {
@@ -186,42 +214,31 @@ export class Tasks implements OnInit {
   }
 
   getPriorityColor(priority: string): string {
-    const colors: any = {
-      low: 'primary',
-      medium: 'accent',
-      high: 'warn',
-      critical: 'warn'
-    };
+    const colors: any = { low: 'primary', medium: 'accent', high: 'warn', critical: 'warn' };
     return colors[priority] || 'primary';
   }
 
   getDueBadge(task: any): { label: string, css: string } | null {
     if (!task.due_date || task.status === 'completed') return null;
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const due = new Date(task.due_date);
     due.setHours(0, 0, 0, 0);
-
     const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
     if (diffDays < 0)   return { label: `🔴 ${Math.abs(diffDays)} days overdue!`, css: 'badge-overdue' };
-    if (diffDays === 0) return { label: '🟡 Due Today!',                           css: 'badge-today'   };
-    if (diffDays <= 3)  return { label: `🟠 ${diffDays} days left`,                css: 'badge-soon'    };
+    if (diffDays === 0) return { label: '🟡 Due Today!', css: 'badge-today' };
+    if (diffDays <= 3)  return { label: `🟠 ${diffDays} days left`, css: 'badge-soon' };
     return null;
   }
 
   checkDueDateAlerts(tasks: any[]) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     tasks.forEach(task => {
       if (!task.due_date || task.status === 'completed') return;
-
       const due = new Date(task.due_date);
       due.setHours(0, 0, 0, 0);
       const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
       if (diffDays < 0)        this.showToast(`🔴 "${task.title}" overdue ஆகிவிட்டது!`, 'error');
       else if (diffDays === 0) this.showToast(`🟡 "${task.title}" — Today due date!`, 'warning');
       else if (diffDays <= 3)  this.showToast(`🟠 "${task.title}" — ${diffDays} days left!`, 'warning');
